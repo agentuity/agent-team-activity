@@ -111,8 +111,8 @@ export const ContributorProfileSchema = z.object({
     preferred_platforms: z.array(z.string()),
     avg_daily_events: z.number(),
   }),
-  expertise_areas: z.array(z.string()).default([]),
-  recent_focus: z.array(z.string()).default([]),
+  expertise_areas: z.array(z.string()).max(5).default([]),
+  recent_focus: z.array(z.string()).max(3).default([]),
 });
 
 export type ContributorProfile = z.infer<typeof ContributorProfileSchema>;
@@ -121,9 +121,9 @@ export const ActionItemSchema = z.object({
   id: z.string(),
   type: z.enum(['review_needed', 'blocked', 'overdue', 'requires_attention']),
   title: z.string(),
-  description: z.string(),
+  description: z.string().nullable().optional(),
   url: z.string().optional(),
-  assignee: z.string().optional(),
+  assignee: z.string().nullable().optional(),
   priority: z.enum(['low', 'medium', 'high', 'urgent']),
   created_at: z.date(),
   due_date: z.date().optional(),

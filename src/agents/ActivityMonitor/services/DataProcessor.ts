@@ -320,7 +320,12 @@ export class DataProcessor {
 				const analysis = await generateObject({
 					model: this.model,
 					system: `Analyze a contributor's activity patterns and expertise areas based on their recent activity.
-          Identify their preferred platforms, expertise areas, and recent focus areas.`,
+          Identify their preferred platforms, expertise areas, and recent focus areas.
+          
+          IMPORTANT CONSTRAINTS:
+          - expertise_areas: maximum 5 items only
+          - recent_focus: maximum 3 items only
+          - Choose the most important/relevant items`,
 					prompt: `Analyze this contributor's activity:
           Name: ${profile.name}
           Recent events: ${JSON.stringify(authorEvents.slice(0, 20).map(e => ({
@@ -395,7 +400,11 @@ export class DataProcessor {
         - PRs that need review (review_needed)
         - Issues that are blocked or stalled (blocked)
         - Overdue tasks or assignments (overdue)
-        - Items requiring immediate attention (requires_attention)`,
+        - Items requiring immediate attention (requires_attention)
+        
+        IMPORTANT: 
+        - If description is not available, omit the field completely (don't use null)
+        - If assignee is not available, omit the field completely (don't use null)`,
 				prompt: `Analyze these events and identify action items that need attention:
         ${JSON.stringify(eventSample, null, 2)}`,
 				schema: z.object({
@@ -403,9 +412,9 @@ export class DataProcessor {
 						event_id: z.string(),
 						type: z.enum(['review_needed', 'blocked', 'overdue', 'requires_attention']),
 						title: z.string(),
-						description: z.string(),
+						description: z.string().nullable().optional(),
 						priority: z.enum(['low', 'medium', 'high', 'urgent']),
-						assignee: z.string().optional(),
+						assignee: z.string().nullable().optional(),
 					})),
 				}),
 			});
@@ -418,9 +427,9 @@ export class DataProcessor {
 						id: `action_${item.event_id}`,
 						type: item.type,
 						title: item.title,
-						description: item.description,
+						description: item.description ?? undefined,
 						url: originalEvent.url,
-						assignee: item.assignee,
+						assignee: item.assignee ?? undefined,
 						priority: item.priority,
 						created_at: originalEvent.timestamp,
 						platform: originalEvent.type,

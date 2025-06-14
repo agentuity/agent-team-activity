@@ -3,6 +3,7 @@ import { MemoryContextSchema } from '../types';
 
 export class MemoryService {
 	private kv: any;
+	private readonly kvStoreName = 'activity-monitor'; // KV store namespace
 
 	constructor(kv: any) {
 		this.kv = kv;
@@ -15,26 +16,37 @@ export class MemoryService {
 		const dateKey = this.getDateKey(date);
 
 		try {
-			const data = await this.kv.get(`context:${dateKey}`);
-			if (!data) return null;
+			const kvResult = await this.kv.get(this.kvStoreName, `context:${dateKey}`);
+			if (!kvResult.exists) return null;
+			
+			const data = await kvResult.data.text();
 
-			// Handle case where data might already be parsed or is malformed
+			// Parse the JSON data
 			let parsed;
-			if (typeof data === 'string') {
+			try {
 				parsed = JSON.parse(data);
-			} else if (typeof data === 'object') {
-				parsed = data;
-			} else {
-				console.warn(`Invalid data type for context ${dateKey}:`, typeof data);
+			} catch (parseError) {
+				console.error(`Failed to parse JSON for context ${dateKey}:`, parseError);
+				// Clear corrupted data and return null
+				await this.kv.delete(this.kvStoreName, `context:${dateKey}`);
 				return null;
 			}
 
-			return MemoryContextSchema.parse(parsed);
+			// Validate the parsed data structure
+			const validationResult = MemoryContextSchema.safeParse(parsed);
+			if (!validationResult.success) {
+				console.error(`Invalid context schema for ${dateKey}:`, validationResult.error.issues);
+				// Clear invalid data and return null to create fresh context
+				await this.kv.delete(this.kvStoreName, `context:${dateKey}`);
+				return null;
+			}
+
+			return validationResult.data;
 		} catch (error) {
 			console.error(`Error getting context for ${dateKey}:`, error);
 			// Clear the corrupted data
 			try {
-				await this.kv.delete(`context:${dateKey}`);
+				await this.kv.delete(this.kvStoreName, `context:${dateKey}`);
 			} catch (deleteError) {
 				console.error(`Error deleting corrupted context for ${dateKey}:`, deleteError);
 			}
@@ -81,8 +93,13 @@ export class MemoryService {
 		// Keep only last 7 days of action items history
 		context.action_items_history = context.action_items_history.slice(-7);
 
-		// Save updated context
-		await this.kv.set(`context:${dateKey}`, JSON.stringify(context));
+		// Save updated context - ensure it's properly stringified for KV store
+		try {
+			await this.kv.set(this.kvStoreName, `context:${dateKey}`, JSON.stringify(context));
+		} catch (error) {
+			console.error(`Error saving context for ${dateKey}:`, error);
+			throw error;
+		}
 	}
 
 	/**
@@ -141,7 +158,7 @@ export class MemoryService {
 		try {
 			// In a real implementation, you'd want to list and delete old keys
 			// For now, we just delete the specific old context
-			await this.kv.delete(`context:${oldDateKey}`);
+			await this.kv.delete(this.kvStoreName, `context:${oldDateKey}`);
 		} catch (error) {
 			console.error('Error during cleanup:', error);
 		}
@@ -152,7 +169,12 @@ export class MemoryService {
 	 */
 	async storeReport(report: DailyReport): Promise<void> {
 		const dateKey = this.getDateKey(report.date);
-		await this.kv.set(`report:${dateKey}`, JSON.stringify(report));
+		try {
+			await this.kv.set(this.kvStoreName, `report:${dateKey}`, JSON.stringify(report));
+		} catch (error) {
+			console.error(`Error storing report for ${dateKey}:`, error);
+			throw error;
+		}
 	}
 
 	/**
@@ -164,10 +186,18 @@ export class MemoryService {
 		const dateKey = this.getDateKey(previousDate);
 
 		try {
-			const data = await this.kv.get(`report:${dateKey}`);
-			if (!data) return null;
+			const kvResult = await this.kv.get(this.kvStoreName, `report:${dateKey}`);
+			if (!kvResult.exists) return null;
 
-			return JSON.parse(data);
+			const data = await kvResult.data.text();
+
+			// Parse the JSON data
+			try {
+				return JSON.parse(data) as DailyReport;
+			} catch (parseError) {
+				console.error(`Failed to parse JSON for report ${dateKey}:`, parseError);
+				return null;
+			}
 		} catch (error) {
 			console.error(`Error getting previous report for ${dateKey}:`, error);
 			return null;
