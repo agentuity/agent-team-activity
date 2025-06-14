@@ -104,19 +104,10 @@ curl -X POST http://localhost:3500/agent_id \
 # Deploy to Agentuity cloud
 agentuity deploy
 
-# Set up scheduled reports (external cron)
+# Set up scheduled reports (create a cron for your agent in app.agentuity.com)
 # POST to your agent URL daily at desired time
 ```
-## 🎯 Report Structure
 
-The agent generates structured reports with:
-
-- **Executive Summary** - Key metrics and priority highlights
-- **Merged PRs** - With impact categorization and line change metrics
-- **Review Requests** - Age tracking and reviewer assignments  
-- **New Issues** - Urgency-based prioritization and assignment status
-- **Team Insights** - Collaboration patterns and top contributors
-- **Action Items** - Categorized by priority with direct links
 
 ## 🤝 Contributing
 
