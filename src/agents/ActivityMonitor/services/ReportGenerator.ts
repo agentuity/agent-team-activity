@@ -23,7 +23,6 @@ export class ReportGenerator {
 			// Get velocity trends for context
 			const velocityTrends = await this.memoryService.getVelocityTrends(7);
 
-			// Generate comprehensive analysis using OpenAI o-3
 			const analysisResult = await generateText({
 				model: this.model,
 				system: `You are an expert technical project manager creating daily activity reports for busy development teams.
@@ -75,11 +74,10 @@ Format for Slack with proper markdown. Be specific and actionable.`,
 				prompt: this.buildEnhancedPrompt(processedData, startDate, endDate, previousReport, velocityTrends),
 			});
 
-			// Store the LLM analysis as our formatted report
 			const report: DailyReport = {
 			date: new Date(),
 			period: { start: startDate, end: endDate },
-			executive_summary: analysisResult.text, // Store the full LLM response here
+			executive_summary: analysisResult.text,
 			highlights: ['LLM-generated comprehensive report'],
 			sections: {
 			  github_activity: {
@@ -132,7 +130,6 @@ Format for Slack with proper markdown. Be specific and actionable.`,
 			},
 		};
 
-			// Store the report for future reference
 			await this.memoryService.storeReport(report);
 
 			return report;
@@ -272,8 +269,6 @@ Analyze this data and create a well-formatted Slack report that busy developers 
 
 
 	async formatForSlack(report: DailyReport): Promise<string> {
-		// The LLM already generated the formatted Slack message in the analysis
-		// We can use that directly or add some footer information
 		const analysisText = report.executive_summary || 'No analysis available';
 		
 		const footer = `\n\n---\n📅 Report Period: ${report.period.start.toLocaleDateString()} - ${report.period.end.toLocaleDateString()}\n⚡ Generated in ${report.metadata.processing_time_ms}ms | Quality Score: ${Math.round(report.metadata.data_quality_score * 100)}%\n---`;
@@ -281,7 +276,6 @@ Analyze this data and create a well-formatted Slack report that busy developers 
 		return analysisText + footer;
 	}
 
-	// Helper methods 
 	private countEventsBySubtype(events: any[], subtype: string): number {
 		return events.filter(event => event.subtype === subtype).length;
 	}

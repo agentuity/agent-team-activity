@@ -64,7 +64,7 @@ export class SlackService {
 			const users = await this.getUsers();
 			const userMap = new Map(users.map(u => [u.id, u]));
 
-			// Collect messages from all channels
+	
 			for (const channelId of channelsToMonitor) {
 				try {
 					const channelMessages = await this.getChannelMessages(channelId, startDate, endDate);
@@ -168,7 +168,7 @@ export class SlackService {
 			const hasFiles = (message.files?.length || 0) > 0;
 			const hasReactions = (message.reactions?.length || 0) > 0;
 
-			// Extract mentions
+	
 			const mentions = this.extractMentions(message.text);
 
 			// Determine message priority based on content

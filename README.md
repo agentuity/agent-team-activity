@@ -1,109 +1,138 @@
 <div align="center">
     <img src="https://raw.githubusercontent.com/agentuity/cli/refs/heads/main/.github/Agentuity.png" alt="Agentuity" width="100"/> <br/>
     <strong>Build Agents, Not Infrastructure</strong> <br/>
-    <br/>
-        <a target="_blank" href="https://app.agentuity.com/deploy" alt="Agentuity">
-            <img src="https://app.agentuity.com/img/deploy.svg" /> 
-        </a>
-    <br />
+	<br/>
+		<a target="_blank" href="https://app.agentuity.com/deploy" alt="Agentuity">
+			<img src="https://app.agentuity.com/img/deploy.svg" /> 
+		</a>
+
+<br />
 </div>
 
-# 🤖 Bun Agent Project
+# 📊 Daily Activity Monitor Agent
 
-Welcome to your Agentuity Bun Agent project! This README provides essential information to help you get started with developing, testing, and deploying your AI agents.
+A sophisticated AI-powered team activity monitoring agent built with **Agentuity** and **OpenAI o-3**, delivering intelligent daily reports that keep development teams informed about GitHub, Slack, and Linear activity with actionable insights and prioritized action items.
 
-## 📋 Prerequisites
+## ✨ Key Features
 
-Before you begin, ensure you have the following installed:
+- 🧠 **Intelligent LLM Analysis** - OpenAI o-3 analyzes raw activity data to generate contextual, actionable reports
+- 📈 **Multi-Platform Integration** - GitHub PRs/issues, Slack messages, and Linear tickets in unified reports  
+- 🎯 **Smart Categorization** - AI categorizes PR impact (breaking/feature/bugfix), issue urgency, and review priorities
+- 💼 **Actionable Insights** - Highlights PRs needing review, critical issues, and team collaboration patterns
+- ⚡ **Real-Time Processing** - Fast data collection with Groq-powered correlation analysis
+- 🔗 **Clickable Links** - Every PR and issue includes direct links for easy navigation
+- 📋 **Developer-Focused** - Reports designed for busy developers who need to stay informed quickly
+- 🚀 **Agentuity Native** - Built for seamless deployment on Agentuity platform
 
-- **Bun**: Version 1.2.4 or higher
+## 🔄 How It Works
 
-## 🚀 Getting Started
+The agent collects activity from GitHub, Slack, and Linear, then uses Groq (Llama 3.1) for fast data correlation and OpenAI o-3 for intelligent analysis. It generates comprehensive Slack reports with categorized PRs, prioritized issues, team activity patterns, and specific action items with clickable links.
+
+## 🚀 Quick Start with Agentuity
+
+### Prerequisites
+
+- **Bun**: 1.2.4+
+- **Agentuity CLI**: Install from [agentuity.dev](https://agentuity.dev)
 
 ### Authentication
-
-Before using Agentuity, you need to authenticate:
 
 ```bash
 agentuity login
 ```
 
-This command will open a browser window where you can log in to your Agentuity account.
-
-### Creating a New Agent
-
-To create a new agent in your project:
-
-```bash
-agentuity agent new
-```
-
-Follow the interactive prompts to configure your agent.
-
 ### Development Mode
 
-Run your project in development mode with:
+Set up your environment variables:
+
+```bash
+agentuity env set GITHUB_TOKEN your_github_token
+agentuity env set GITHUB_ORG your_github_org
+agentuity env set SLACK_BOT_TOKEN your_slack_bot_token  
+agentuity env set SLACK_REPORT_CHANNEL your_channel_id
+agentuity env set LINEAR_API_KEY your_linear_key
+```
+
+Start the agent in development mode for real-time testing:
 
 ```bash
 agentuity dev
 ```
 
-This will start your project and open a new browser window connecting your agent to the Agentuity Console in DevMode, allowing you to test and debug your agent in real-time.
+This launches the Agentuity Console where you can test the agent and see generated reports.
 
-## 🌐 Deployment
+### Production Deployment
 
-When you're ready to deploy your agent to the Agentuity Cloud:
+Deploy your agent to the Agentuity cloud platform:
 
 ```bash
 agentuity deploy
 ```
 
-This command will bundle your agent and deploy it to the cloud, making it accessible via the Agentuity platform.
+### Example Usage
 
-## 📚 Project Structure
-
-```
-├── agents/             # Agent definitions and implementations
-├── node_modules/       # Dependencies
-├── package.json        # Project dependencies and scripts
-└── agentuity.yaml      # Agentuity project configuration
-```
-
-## 🔧 Configuration
-
-Your project configuration is stored in `agentuity.yaml`. This file defines your agents, development settings, and deployment configuration.
-
-## 🛠️ Advanced Usage
-
-### Environment Variables
-
-You can set environment variables for your project:
+The agent automatically generates daily reports when triggered:
 
 ```bash
-agentuity env set KEY VALUE
+curl -X POST https://your-agent-url \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Generate daily activity report"}'
 ```
 
-### Secrets Management
+**Sample Output:**
+- 🚀 **Merged PRs** with impact categorization (🔥 breaking, ✨ features, 🐛 fixes)
+- 👀 **PRs Needing Review** with age indicators and requested reviewers
+- 🎯 **New Issues** categorized by urgency with assignment status
+- 👥 **Team Activity** showing top contributors and collaboration patterns
+- 🚨 **Action Items** prioritized by urgency with assignees
 
-For sensitive information, use secrets:
+## 🏗️ Deployment with Agentuity
 
+### Local Development
 ```bash
-agentuity env set --secret KEY VALUE
+# Start development server
+agentuity dev
+
+# Test the agent
+curl -X POST http://localhost:3500/agent_id \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Generate daily activity report"}'
 ```
 
-## 📖 Documentation
+### Production Deployment
+```bash
+# Deploy to Agentuity cloud
+agentuity deploy
 
-For comprehensive documentation on the Agentuity JavaScript SDK, visit:
-[https://agentuity.dev/SDKs/javascript](https://agentuity.dev/SDKs/javascript)
+# Set up scheduled reports (external cron)
+# POST to your agent URL daily at desired time
+```
+## 🎯 Report Structure
 
-## 🆘 Troubleshooting
+The agent generates structured reports with:
 
-If you encounter any issues:
+- **Executive Summary** - Key metrics and priority highlights
+- **Merged PRs** - With impact categorization and line change metrics
+- **Review Requests** - Age tracking and reviewer assignments  
+- **New Issues** - Urgency-based prioritization and assignment status
+- **Team Insights** - Collaboration patterns and top contributors
+- **Action Items** - Categorized by priority with direct links
 
-1. Check the [documentation](https://agentuity.dev/SDKs/javascript)
-2. Join our [Discord community](https://discord.gg/agentuity) for support
-3. Contact the Agentuity support team
+## 🤝 Contributing
 
-## 📝 License
+This is a production-ready activity monitoring agent built with Agentuity, OpenAI o-3, and Groq. The agent uses intelligent LLM analysis to replace hundreds of lines of deterministic categorization logic.
 
-This project is licensed under the terms specified in the LICENSE file.
+## 📚 Documentation
+
+- [Agentuity Documentation](https://agentuity.dev/docs)
+- [Agentuity TypeScript SDK](https://agentuity.dev/SDKs/javascript)
+
+## 🆘 Support
+
+- [Agentuity Discord Community](https://discord.com/invite/vtn3hgUfuc)
+
+---
+
+<div align="center">
+<strong>Built with ❤️ using Agentuity, OpenAI o-3, and Groq for intelligent team insights</strong>
+</div>

@@ -89,7 +89,7 @@ export class GitHubService {
       // Get organization repositories
       const repos = await this.getOrgRepositories();
       
-      // Collect activity from all repositories in parallel
+      
       const repoActivities = await Promise.allSettled(
         repos.map(repo => this.getRepositoryActivity(repo, startDate, endDate))
       );
