@@ -43,18 +43,21 @@ ANALYZE THE DATA AND CREATE A FORMATTED SLACK REPORT with these sections:
 - 🔧 Routine (dependency updates, minor tweaks)
 - 📚 Documentation
 
-For each PR show: Impact emoji, title, author, repo, line changes, and any linked issues
+For each PR show: Impact emoji, title, author, repo, line changes, and ALWAYS include clickable links using the URL field. Format as: <URL|Click to View PR>
 
 **👀 PRs Needing Review** - Highlight PRs waiting for review with:
 - Age (how long it's been waiting)
 - Size and complexity indicators
 - Requested reviewers
 - Priority based on content and context
+- ALWAYS include clickable links: <URL|Review PR>
 
 **🎯 New Issues** - Categorize by urgency:
 - 🚨 Critical (outages, security, blockers)
 - ⚡ High priority (important features, significant bugs)
 - 📋 Standard (regular development work)
+
+For each issue include clickable links: <URL|View Issue>
 
 **👥 Team Activity** - Top contributors and collaboration patterns
 
@@ -65,6 +68,8 @@ Use your intelligence to determine what's truly important vs routine. Consider:
 - Issue urgency based on labels and content
 - Team collaboration patterns
 - What developers actually need to know to stay productive
+
+CRITICAL: Always include clickable links for PRs and Issues using the URL field from the event data. Use Slack link format: <URL|Display Text>
 
 Format for Slack with proper markdown. Be specific and actionable.`,
 				prompt: this.buildEnhancedPrompt(processedData, startDate, endDate, previousReport, velocityTrends),
@@ -123,7 +128,6 @@ Format for Slack with proper markdown. Be specific and actionable.`,
 					github: (processedData.summary_stats.events_by_platform.github ?? 0) > 0,
 					slack: (processedData.summary_stats.events_by_platform.slack ?? 0) > 0,
 					linear: (processedData.summary_stats.events_by_platform.linear ?? 0) > 0,
-					discord: (processedData.summary_stats.events_by_platform.discord ?? 0) > 0,
 				},
 			},
 		};
@@ -260,7 +264,6 @@ Analyze this data and create a well-formatted Slack report that busy developers 
 					github: (data.summary_stats.events_by_platform.github ?? 0) > 0,
 					slack: (data.summary_stats.events_by_platform.slack ?? 0) > 0,
 					linear: (data.summary_stats.events_by_platform.linear ?? 0) > 0,
-					discord: (data.summary_stats.events_by_platform.discord ?? 0) > 0,
 				},
 			},
 		};
@@ -324,10 +327,9 @@ Analyze this data and create a well-formatted Slack report that busy developers 
 
 	private calculateDataQualityScore(data: ProcessedData): number {
 		let score = 0;
-		if ((data.summary_stats.events_by_platform.github ?? 0) > 0) score += 25;
-		if ((data.summary_stats.events_by_platform.slack ?? 0) > 0) score += 25;
-		if ((data.summary_stats.events_by_platform.linear ?? 0) > 0) score += 25;
-		if ((data.summary_stats.events_by_platform.discord ?? 0) > 0) score += 25;
+		if ((data.summary_stats.events_by_platform.github ?? 0) > 0) score += 33;
+		if ((data.summary_stats.events_by_platform.slack ?? 0) > 0) score += 33;
+		if ((data.summary_stats.events_by_platform.linear ?? 0) > 0) score += 34;
 		return score / 100;
 	}
 }

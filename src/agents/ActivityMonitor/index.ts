@@ -4,7 +4,6 @@ import type { AgentContext, AgentRequest, AgentResponse } from '@agentuity/sdk';
 import { GitHubService } from './services/GitHubService';
 import { SlackService } from './services/SlackService';
 import { LinearService } from './services/LinearService';
-import { DiscordService } from './services/DiscordService';
 import { DataProcessor } from './services/DataProcessor';
 import { ReportGenerator } from './services/ReportGenerator';
 import { MemoryService } from './services/MemoryService';
@@ -12,7 +11,7 @@ import { MemoryService } from './services/MemoryService';
 export const welcome = () => {
 	return {
 		welcome:
-			"Welcome to the Activity Monitor Agent! I aggregate and analyze daily activity across GitHub, Slack, Linear, and Discord to provide intelligent team insights.",
+			"Welcome to the Activity Monitor Agent! I aggregate and analyze daily activity across GitHub, Slack, and Linear to provide intelligent team insights.",
 		prompts: [
 			{
 				data: 'Generate daily activity report',
@@ -44,7 +43,6 @@ export default async function Agent(
 		const githubService = new GitHubService(process.env.GITHUB_TOKEN || '');
 		const slackService = new SlackService(process.env.SLACK_BOT_TOKEN || '');
 		const linearService = new LinearService(process.env.LINEAR_API_KEY || '');
-		const discordService = new DiscordService(process.env.DISCORD_BOT_TOKEN || '');
 
 		const dataProcessor = new DataProcessor(memoryService);
 		const reportGenerator = new ReportGenerator(memoryService);
@@ -56,28 +54,25 @@ export default async function Agent(
 		ctx.logger.info(`Collecting activity from ${yesterday.toISOString()} to ${now.toISOString()}`);
 
 		// Collect data from all sources in parallel
-		const [githubData, slackData, linearData, discordData] = await Promise.allSettled([
+		const [githubData, slackData, linearData] = await Promise.allSettled([
 			githubService.getActivity(yesterday, now),
 			slackService.getActivity(yesterday, now),
 			linearService.getActivity(yesterday, now),
-			discordService.getActivity(yesterday, now),
 		]);
 
 		// Log any failures but continue processing
 		if (githubData.status === 'rejected') ctx.logger.error('GitHub data collection failed:', githubData.reason);
 		if (slackData.status === 'rejected') ctx.logger.error('Slack data collection failed:', slackData.reason);
 		if (linearData.status === 'rejected') ctx.logger.error('Linear data collection failed:', linearData.reason);
-		if (discordData.status === 'rejected') ctx.logger.error('Discord data collection failed:', discordData.reason);
 
 		// Extract successful results
 		const rawData = {
 			github: githubData.status === 'fulfilled' ? githubData.value : [],
 			slack: slackData.status === 'fulfilled' ? slackData.value : [],
 			linear: linearData.status === 'fulfilled' ? linearData.value : [],
-			discord: discordData.status === 'fulfilled' ? discordData.value : [],
 		};
 
-		ctx.logger.info(`Collected ${rawData.github.length} GitHub events, ${rawData.slack.length} Slack events, ${rawData.linear.length} Linear events, ${rawData.discord.length} Discord events`);
+		ctx.logger.info(`Collected ${rawData.github.length} GitHub events, ${rawData.slack.length} Slack events, ${rawData.linear.length} Linear events`);
 
 		// Process and correlate data using Groq
 		const processedData = await dataProcessor.processAndCorrelate(rawData);
@@ -98,7 +93,7 @@ export default async function Agent(
 		const processingTime = Date.now() - startTime;
 		ctx.logger.info(`Activity monitoring completed in ${processingTime}ms`);
 
-		return resp.text(`Daily activity report generated and posted to Slack successfully!\n\n**Processing Summary:**\n- GitHub events: ${rawData.github.length}\n- Slack events: ${rawData.slack.length}\n- Linear events: ${rawData.linear.length}\n- Discord events: ${rawData.discord.length}\n- Processing time: ${processingTime}ms\n- Slack message ID: ${slackResult.ts}`);
+		return resp.text(`Daily activity report generated and posted to Slack successfully!\n\n**Processing Summary:**\n- GitHub events: ${rawData.github.length}\n- Slack events: ${rawData.slack.length}\n- Linear events: ${rawData.linear.length}\n- Processing time: ${processingTime}ms\n- Slack message ID: ${slackResult.ts}`);
 
 	} catch (error) {
 		ctx.logger.error('Error running activity monitor agent:', error);

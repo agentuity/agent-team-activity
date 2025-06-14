@@ -3,7 +3,7 @@ import { z } from 'zod';
 // Base activity event schema
 export const ActivityEventSchema = z.object({
   id: z.string(),
-  type: z.enum(['github', 'slack', 'linear', 'discord']),
+  type: z.enum(['github', 'slack', 'linear']),
   subtype: z.string(), // pr_opened, issue_closed, message_sent, etc.
   timestamp: z.date(),
   author: z.object({
@@ -205,7 +205,6 @@ export const DailyReportSchema = z.object({
       github: z.boolean(),
       slack: z.boolean(),
       linear: z.boolean(),
-      discord: z.boolean(),
     }),
   }),
 });

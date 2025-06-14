@@ -23,14 +23,12 @@ export class DataProcessor {
 		github: ActivityEvent[];
 		slack: ActivityEvent[];
 		linear: ActivityEvent[];
-		discord: ActivityEvent[];
 	}): Promise<ProcessedData> {
 		// Combine all events
 		const allEvents = [
 			...rawData.github,
 			...rawData.slack,
 			...rawData.linear,
-			...rawData.discord,
 		];
 
 		console.log(`Processing ${allEvents.length} total events...`);
@@ -93,7 +91,6 @@ export class DataProcessor {
 				github: events.filter(e => e.type === 'github'),
 				slack: events.filter(e => e.type === 'slack'),
 				linear: events.filter(e => e.type === 'linear'),
-				discord: events.filter(e => e.type === 'discord'),
 			};
 
 			// Find PR to Linear correlations
