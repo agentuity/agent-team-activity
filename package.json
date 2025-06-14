@@ -18,6 +18,7 @@
     "ai agent",
     "bun"
   ],
+  "license": "Apache-2.0",
   "private": true,
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
