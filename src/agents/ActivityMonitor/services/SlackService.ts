@@ -315,11 +315,25 @@ export class SlackService {
 		}
 
 		try {
-			// First check if bot is in the channel
+			// Debug: Check bot's channel access
+			console.log(`Attempting to post to channel: ${this.reportChannel}`);
+			
+			// First test if bot can list channels at all
+			try {
+				const testChannels = await this.listBotChannels();
+				console.log(`Bot can access ${testChannels.length} channels:`, testChannels.map(c => `${c.name} (${c.id})`));
+			} catch (testError) {
+				console.error('Bot cannot list channels:', testError);
+			}
+			
 			const channelInfo = await this.getChannelInfo(this.reportChannel);
 			if (!channelInfo) {
-				console.warn(`Cannot access channel ${this.reportChannel} - bot may not be a member`);
+				const error = `Cannot access channel ${this.reportChannel} - bot may not be a member or lacks permissions`;
+				console.error(error);
+				throw new Error(error);
 			}
+			
+			console.log(`Channel info:`, { name: channelInfo.name, is_member: channelInfo.is_member, is_private: channelInfo.is_private });
 
 			const response = await this.makeRequest('chat.postMessage', {
 				channel: this.reportChannel,
@@ -420,17 +434,32 @@ export class SlackService {
 	/**
 	 * Get information about a specific channel
 	 */
-	async getChannelInfo(channelId: string): Promise<{ name: string; topic: string } | null> {
+	async getChannelInfo(channelId: string): Promise<{ name: string; topic: string; is_member: boolean; is_private: boolean } | null> {
 		try {
 			const response = await this.makeRequest('conversations.info', {
 				channel: channelId,
+			});
+
+			console.log(`Raw channel info response for ${channelId}:`, {
+				ok: response.ok,
+				error: response.error,
+				channel: response.channel ? {
+					name: response.channel.name,
+					is_member: response.channel.is_member,
+					is_private: response.channel.is_private,
+					is_archived: response.channel.is_archived
+				} : null
 			});
 
 			if (response.ok) {
 				return {
 					name: response.channel.name,
 					topic: response.channel.topic?.value || '',
+					is_member: response.channel.is_member || false,
+					is_private: response.channel.is_private || false,
 				};
+			} else {
+				console.error(`Slack API error for channel ${channelId}:`, response.error);
 			}
 		} catch (error) {
 			console.error(`Error getting channel info for ${channelId}:`, error);
